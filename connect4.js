@@ -1,5 +1,12 @@
+class Player {
+  constructor(playerNumber, color) {
+    this.playerNumber = playerNumber;
+    this.color = color;
+  }
+}
+
 class Game {
-  constructor(width, height) {
+  constructor(width, height, player1, player2) {
     for (let dimen of [width, height]) {
       if (!Number.isFinite(dimen) || dimen <= 0) {
         throw new Error('Board dimensions must be greater than 0');
@@ -8,27 +15,26 @@ class Game {
     this.width = width;
     this.height = height;
     this.gameOver = false;
+    this.makeBoard();
+    this.makeHtmlBoard();
+    this.p1 = player1;
+    this.p2 = player2;
+    this.currPlayer = this.p1;
   }
+
   /**
    * Initializes default values and draws game board.
    */
-  newGame() {
-    this.board = this.makeBoard();
-    this.currPlayer = 1;
-    this.gameOver = false;
-    this.makeHtmlBoard();
-  }
 
   /**
    * makeBoard: create in-JS board structure:
    *  board = array of rows, each row is array of cells  (board[y][x])
    */
   makeBoard() {
-    const newBoard = [];
+    this.board = [];
     for (let y = 0; y < this.height; y++) {
-      newBoard.push(Array.from({ length: this.width }));
+      this.board.push(Array.from({ length: this.width }));
     }
-    return newBoard;
   }
 
   /**
@@ -36,6 +42,7 @@ class Game {
    */
   makeHtmlBoard() {
     const htmlBoard = document.getElementById('board');
+    console.dir(htmlBoard);
 
     // Clear out old board, if present.
     htmlBoard.innerHTML = '';
@@ -85,7 +92,7 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement('div');
     piece.classList.add('piece');
-    piece.classList.add(`p${this.currPlayer}`);
+    piece.style.backgroundColor = this.currPlayer.color;
     piece.style.top = -50 * (y + 2);
 
     const spot = document.getElementById(`${y}-${x}`);
@@ -119,12 +126,12 @@ class Game {
     }
 
     // place piece in board and add to HTML table
-    this.board[y][x] = this.currPlayer;
+    this.board[y][x] = this.currPlayer.playerNumber;
     this.placeInTable(y, x);
 
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      return this.endGame(`Player ${this.currPlayer.playerNumber} won!`);
     }
 
     // check for tie
@@ -133,7 +140,7 @@ class Game {
     }
 
     // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
+    this.currPlayer = this.currPlayer === this.p1 ? this.p2 : this.p1;
   }
 
   /**
@@ -148,7 +155,8 @@ class Game {
       //  - returns true if all are legal coordinates & all match currPlayer
 
       return cells.every(
-        ([y, x]) => y >= 0 && y < this.height && x >= 0 && x < this.width && this.board[y][x] === this.currPlayer
+        ([y, x]) =>
+          y >= 0 && y < this.height && x >= 0 && x < this.width && this.board[y][x] === this.currPlayer.playerNumber
       );
     };
 
@@ -191,6 +199,7 @@ class Game {
 }
 
 document.querySelector('#btn-new-game').addEventListener('click', () => {
-  const game = new Game(6, 7);
-  game.newGame();
+  const p1 = new Player(1, document.querySelector('#p1').value);
+  const p2 = new Player(2, document.querySelector('#p2').value);
+  new Game(6, 7, p1, p2);
 });
