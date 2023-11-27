@@ -7,8 +7,15 @@ class Game {
     }
     this.width = width;
     this.height = height;
+    this.gameOver = false;
+  }
+  /**
+   * Initializes default values and draws game board.
+   */
+  newGame() {
     this.board = this.makeBoard();
     this.currPlayer = 1;
+    this.gameOver = false;
     this.makeHtmlBoard();
   }
 
@@ -29,6 +36,9 @@ class Game {
    */
   makeHtmlBoard() {
     const htmlBoard = document.getElementById('board');
+
+    // Clear out old board, if present.
+    htmlBoard.innerHTML = '';
 
     // make column tops (clickable area for adding a piece to that column)
     const top = document.createElement('tr');
@@ -86,6 +96,7 @@ class Game {
    * endGame: announce game end
    */
   endGame(msg) {
+    this.gameOver = true;
     alert(msg);
   }
 
@@ -93,6 +104,11 @@ class Game {
    * handleClick: handle click of column top to play piece
    */
   handleClick(evt) {
+    // if game over, ignore click
+    if (this.gameOver) {
+      return;
+    }
+
     // get x from ID of clicked cell
     const x = +evt.target.id;
 
@@ -174,4 +190,7 @@ class Game {
   }
 }
 
-new Game(6, 7);
+document.querySelector('#btn-new-game').addEventListener('click', () => {
+  const game = new Game(6, 7);
+  game.newGame();
+});
